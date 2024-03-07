@@ -58,7 +58,7 @@ def show_pdf(pdf_file, col1, col2, selected_pages: dict):
     """
     pdf_document = fitz.open(stream=pdf_file.read(), filetype="pdf")
     number_pages = pdf_document.page_count
-    
+
     height = number_pages * 40 if number_pages < 10 else 400
     check_container = col1.container(height=height, border=False)
     pdf_container = col2.container(height=700, border=False)
