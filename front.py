@@ -34,24 +34,29 @@ def show_pdf(pdf_file):
     pdf_reader = PyPDF2.PdfReader(pdf_file)
     nbr_pages = len(pdf_reader.pages)
     page_num = st.selectbox("Sélectionner une page", range(1, nbr_pages+1))
-
-    col2, overview, pdf = st.columns([3, 3 ,2])
     pdf_page = pdf_reader.pages[page_num-1]
-    pdf.image(img_from_page(pdf_show, page_num))
-    col2.markdown('##### Text to clean : ')
-    text = col2.text_area(
+
+    docs, overview, pdf = st.columns([3, 3, 2])
+
+    # column 1
+    docs.markdown('##### Text to clean : ')
+    text = docs.text_area(
         label="Text to clean",
         value=pdf_page.extract_text(),
         height=600,
         label_visibility='collapsed'
         )
+
+    # column 2
     overview.markdown('##### Aperçu : ')
     with overview.container(height=600):
         st.markdown(text)
 
+    # column 3
+    pdf.image(img_from_page(pdf_show, page_num))
+
     if st.button('Upload  clean_text'):
         st.toast('Pdf upload !')
-
     with open("instruction.md", "r", encoding="utf-8") as file:
         markdown_content = file.read()
     st.markdown(markdown_content)
