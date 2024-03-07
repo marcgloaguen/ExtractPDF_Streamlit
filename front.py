@@ -15,27 +15,30 @@ def main():
     col1, col2 = st.columns([1, 2])
 
     pdf_file = col1.file_uploader("Instruct", type=["pdf"])
+    print("reset")
 
     if pdf_file is not None:
-        if col1.button('Upload'): 
-            st.toast('Pdf upload !')
-
         with col2:
             pdf_document = fitz.open(stream=pdf_file.read(), filetype="pdf")
-            with st.container(height=1000):
+            with st.container(height=700, border=False):
                 for page_nbr in range(pdf_document.page_count):
-
-                    st.checkbox(f'Page {page_nbr+1}', value=True)
+                    col1.checkbox(f'Page : {page_nbr+1}', value=True)
+                    st.title(f'Page {page_nbr+1}')
                     st.image(
                         image_from_page(pdf_document, page_nbr),
                         use_column_width="always"
                         )
 
+        if col1.button('Upload'):
+            st.toast('Pdf upload !')
 
-def image_from_page(doc: fitz.Document, page_nbr: int) -> Image:
-    page = doc.load_page(page_nbr)
+
+def image_from_page(doc: fitz.Document, n_page: int, bw: bool = True) -> Image:
+    page = doc.load_page(n_page)
     pix = page.get_pixmap()
     image = Image.frombytes("RGB", [pix.width,  pix.height], pix.samples)
+    if not bw:
+        image = image.convert("L")
     return image
 
 
