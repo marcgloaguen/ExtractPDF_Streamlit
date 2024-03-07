@@ -22,14 +22,14 @@ def main():
         show_pdf(pdf_file, infos, pdf, selected_pages)
 
 
-def img_from_pge(doc: fitz.Document, n_page: int, color: bool = True) -> Image:
+def img_from_page(doc: fitz.Document, n_page: int, col: bool = True) -> Image:
     """
     Converts a PDF page to an image.
 
     Args:
         doc (fitz.Document): PDF document.
         n_page (int): Number of the page to convert to an image.
-        color (bool, optional): If True, the image will be in color.
+        c (bool, optional): If True, the image will be in color.
         Otherwise, it will be in balck and white.
 
     Returns:
@@ -39,7 +39,7 @@ def img_from_pge(doc: fitz.Document, n_page: int, color: bool = True) -> Image:
     page = doc.load_page(index_page)
     pix = page.get_pixmap()
     image = Image.frombytes("RGB", [pix.width,  pix.height], pix.samples)
-    if not color:
+    if not col:
         image = image.convert("L")
     return image
 
@@ -69,7 +69,7 @@ def show_pdf(pdf_file, col1, col2, selected_pages):
 
         pdf_container.title(f'Page {page_nbr} :')
         pdf_container.image(
-            img_from_pge(pdf_document, page_nbr, selected),
+            img_from_page(pdf_document, page_nbr, selected),
             use_column_width="always"
             )
 
