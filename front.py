@@ -36,7 +36,7 @@ def show_pdf(pdf_file):
     page_num = st.selectbox("Sélectionner une page", range(1, nbr_pages+1))
     pdf_page = pdf_reader.pages[page_num-1]
 
-    docs, overview, pdf = st.columns([3, 3, 2])
+    docs, overview, pdf = st.columns([4, 4, 2])
 
     # column 1
     docs.markdown('##### Text to clean : ')
@@ -53,10 +53,11 @@ def show_pdf(pdf_file):
         st.markdown(text)
 
     # column 3
+    pdf.markdown("##### Aperçu du pdf : ")
     pdf.image(img_from_page(pdf_show, page_num))
-
-    if st.button('Upload  clean_text'):
+    if pdf.button('Upload  clean_text'):
         st.toast('Pdf upload !')
+
     with open("instruction.md", "r", encoding="utf-8") as file:
         markdown_content = file.read()
     st.markdown(markdown_content)
