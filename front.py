@@ -44,7 +44,7 @@ def img_from_page(doc: fitz.Document, n_page: int, col: bool = True) -> Image:
     return image
 
 
-def show_pdf(pdf_file, col1, col2, selected_pages):
+def show_pdf(pdf_file, col1, col2, selected_pages: dict):
     """
     Displays the uploaded PDF and allows the user to select pages.
 
@@ -52,10 +52,13 @@ def show_pdf(pdf_file, col1, col2, selected_pages):
         pdf_file: Uploaded PDF file.
         col1: First column of the Streamlit page.
         col2: Second column of the Streamlit page.
-        selected_pages: Dictionary of selected pages.
+        selected_pages (dict): Dictionary of selected pages.
+    Returns:
+        Displays PDF and the page's checkbox
     """
     pdf_document = fitz.open(stream=pdf_file.read(), filetype="pdf")
     number_pages = pdf_document.page_count
+    
     height = number_pages * 40 if number_pages < 10 else 400
     check_container = col1.container(height=height, border=False)
     pdf_container = col2.container(height=700, border=False)
