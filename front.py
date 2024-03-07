@@ -22,15 +22,15 @@ def main():
         show_pdf(pdf_file, infos, pdf, selected_pages)
 
 
-def image_from_page(doc: fitz.Document, n_page: int, bw: bool = True) -> Image:
+def img_from_pge(doc: fitz.Document, n_page: int, color: bool = True) -> Image:
     """
     Converts a PDF page to an image.
 
     Args:
         doc (fitz.Document): PDF document.
         n_page (int): Number of the page to convert to an image.
-        bw (bool, optional): If True, the image will be in black and white.
-            Otherwise, it will be in color. Defaults to True.
+        color (bool, optional): If True, the image will be in color.
+        Otherwise, it will be in balck and white.
 
     Returns:
         Image: Image of the PDF page.
@@ -39,7 +39,7 @@ def image_from_page(doc: fitz.Document, n_page: int, bw: bool = True) -> Image:
     page = doc.load_page(index_page)
     pix = page.get_pixmap()
     image = Image.frombytes("RGB", [pix.width,  pix.height], pix.samples)
-    if not bw:
+    if not color:
         image = image.convert("L")
     return image
 
@@ -55,18 +55,23 @@ def show_pdf(pdf_file, col1, col2, selected_pages):
         selected_pages: Dictionary of selected pages.
     """
     pdf_document = fitz.open(stream=pdf_file.read(), filetype="pdf")
-    with col2.container(height=700, border=False):
-        for page_nbr in range(1, 1+pdf_document.page_count):
-            selected = col1.checkbox(f'Page : {page_nbr}', value=True)
-            if selected:
-                selected_pages[page_nbr] = True
-            else:
-                selected_pages.pop(page_nbr, None)
-            st.title(f'Page {page_nbr} :')
-            st.image(
-                image_from_page(pdf_document, page_nbr, selected),
-                use_column_width="always"
-                )
+    number_pages = pdf_document.page_count
+    height = number_pages * 40 if number_pages < 10 else 400
+    check_container = col1.container(height=height, border=False)
+    pdf_container = col2.container(height=700, border=False)
+
+    for page_nbr in range(1, 1+number_pages):
+        selected = check_container.checkbox(f'Page : {page_nbr}', value=True)
+        if selected:
+            selected_pages[page_nbr] = True
+        else:
+            selected_pages.pop(page_nbr, None)
+
+        pdf_container.title(f'Page {page_nbr} :')
+        pdf_container.image(
+            img_from_pge(pdf_document, page_nbr, selected),
+            use_column_width="always"
+            )
 
     if col1.button('Upload'):
         st.toast('Pdf upload !')
