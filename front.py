@@ -16,11 +16,10 @@ def main():
         menu_items=None
         )
     st.title("PDF Extract")
-    infos, pdf = st.columns(2)
-    pdf_file = infos.file_uploader("Instruct", type=["pdf"])
+    pdf_file = st.file_uploader("Instruct", type=["pdf"])
 
     if pdf_file is not None:
-        show_pdf(pdf_file, infos, pdf)
+        show_pdf(pdf_file)
 
 
 def img_from_page(doc: fitz.Document, n_page: int) -> Image:
@@ -30,42 +29,32 @@ def img_from_page(doc: fitz.Document, n_page: int) -> Image:
     return image
 
 
-def show_pdf(pdf_file, col1, col2):
-    pdf = fitz.open(stream=pdf_file.read(), filetype="pdf")
+def show_pdf(pdf_file):
+    pdf_show = fitz.open(stream=pdf_file.read(), filetype="pdf")
     pdf_reader = PyPDF2.PdfReader(pdf_file)
     nbr_pages = len(pdf_reader.pages)
-    page_num = col2.selectbox("Sélectionner une page", range(1, nbr_pages+1))
+    page_num = st.selectbox("Sélectionner une page", range(1, nbr_pages+1))
+
+    col2, overview, pdf = st.columns([3, 3 ,2])
     pdf_page = pdf_reader.pages[page_num-1]
+    pdf.image(img_from_page(pdf_show, page_num))
+    col2.markdown('##### Text to clean : ')
+    text = col2.text_area(
+        label="Text to clean",
+        value=pdf_page.extract_text(),
+        height=600,
+        label_visibility='collapsed'
+        )
+    overview.markdown('##### Aperçu : ')
+    with overview.container(height=600):
+        st.markdown(text)
 
-    container1 = col1.container(height=600)
-    container1.image(img_from_page(pdf, page_num))
-
-    col2.text_area("Text to clean", pdf_page.extract_text(), 600)
-    if col2.button('Upload  clean_text'):
+    if st.button('Upload  clean_text'):
         st.toast('Pdf upload !')
 
-    st.markdown(
-        """
-        ---
-        ##### Instruction
-        Utilisez le caractère dièse (#) suivi d'un espace pour définir des titres. Par exemple :
-        ```
-        # Titre principal
-        ## Sous-titre
-        ### Sous-sous-titre
-        ```
-        Utilisez trois tirets (-) ou astérisques (*) sur une ligne pour créer un séparateur horizontal :
-        ```
-        ---
-        ```
-
-        ou
-
-        ```
-        ***
-        ```
-    """
-    )
+    with open("instruction.md", "r", encoding="utf-8") as file:
+        markdown_content = file.read()
+    st.markdown(markdown_content)
 
 
 if __name__ == "__main__":
