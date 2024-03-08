@@ -5,10 +5,6 @@ import fitz
 
 
 def main():
-    """
-    Main function of the Streamlit app that configures the page and calls
-    the function to display the PDF.
-    """
     st.set_page_config(
         page_title="PDF Extract",
         page_icon="📑",
@@ -17,9 +13,11 @@ def main():
         )
     st.title("PDF Extract")
     pdf_file = st.file_uploader("Instruct", type=["pdf"])
-
     if pdf_file is not None:
         show_pdf(pdf_file)
+    with open("instruction.md", "r", encoding="utf-8") as file:
+        markdown_content = file.read()
+    st.markdown(markdown_content)
 
 
 def img_from_page(doc: fitz.Document, n_page: int) -> Image:
@@ -29,7 +27,7 @@ def img_from_page(doc: fitz.Document, n_page: int) -> Image:
     return image
 
 
-def show_pdf(pdf_file):
+def show_pdf(pdf_file: st.file_uploader):
     pdf_show = fitz.open(stream=pdf_file.read(), filetype="pdf")
     pdf_reader = PyPDF2.PdfReader(pdf_file)
     nbr_pages = len(pdf_reader.pages)
@@ -57,10 +55,6 @@ def show_pdf(pdf_file):
     pdf.image(img_from_page(pdf_show, page_num))
     if pdf.button('Upload  clean_text'):
         st.toast('Pdf upload !')
-
-    with open("instruction.md", "r", encoding="utf-8") as file:
-        markdown_content = file.read()
-    st.markdown(markdown_content)
 
 
 if __name__ == "__main__":

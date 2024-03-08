@@ -1,6 +1,8 @@
 ---
 ##### Instruction
-Utilisez le caractère dièse (#) suivi d'un espace pour définir des titres. Par exemple :
+Utilisez le caractère dièse (#) suivi d'un espace pour définir des titres. 
+
+Par exemple :
 ```
 # Titre principal
 ## Sous-titre
