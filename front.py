@@ -4,7 +4,6 @@ import PyPDF2
 import fitz
 from pymongo import MongoClient
 import datetime
-import io
 
 
 def main():
