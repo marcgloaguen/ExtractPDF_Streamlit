@@ -2,6 +2,9 @@ import streamlit as st
 from PIL import Image
 import PyPDF2
 import fitz
+from pymongo import MongoClient
+import datetime
+import io
 
 
 def main():
@@ -25,6 +28,23 @@ def img_from_page(doc: fitz.Document, n_page: int) -> Image:
     pix = page.get_pixmap()
     image = Image.frombytes("RGB", [pix.width,  pix.height], pix.samples)
     return image
+
+
+def upload_to_mongodb(img, brut, clean, comment):
+    img_data = io.BytesIO()
+    img.save(img_data, format='JPEG')
+    img_data = img_data.getvalue()
+    client = MongoClient('mongodb://localhost:27017/')
+    collection = client.RagVignerons.page_pdf
+    document = {
+        "date": datetime.datetime.now(tz=datetime.timezone.utc),
+        'pdf_image': img_data,
+        'text_brut': brut,
+        'text_clean': clean,
+        'comment': comment
+    }
+    collection.insert_one(document)
+    client.close()
 
 
 def show_pdf(pdf_file: st.file_uploader):
@@ -52,8 +72,11 @@ def show_pdf(pdf_file: st.file_uploader):
 
     # column 3
     pdf.markdown("##### Aperçu du pdf : ")
-    pdf.image(img_from_page(pdf_show, page_num))
+    img = img_from_page(pdf_show, page_num)
+    pdf.image(img)
+    comment = pdf.text_input("Commentaires:")
     if pdf.button('Upload  clean_text'):
+        upload_to_mongodb(img, pdf_page.extract_text(), text, comment)
         st.toast('Pdf upload !')
 
 
