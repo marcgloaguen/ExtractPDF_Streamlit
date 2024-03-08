@@ -23,22 +23,26 @@ def main():
     st.markdown(markdown_content)
 
 
-def img_from_page(doc: fitz.Document, n_page: int) -> Image:
+def img_from_page(doc, n_page: int) -> Image:
     page = doc.load_page(n_page-1)
     pix = page.get_pixmap()
     image = Image.frombytes("RGB", [pix.width,  pix.height], pix.samples)
     return image
 
 
-def upload_to_mongodb(img, brut, clean, comment):
-    img_data = io.BytesIO()
-    img.save(img_data, format='JPEG')
-    img_data = img_data.getvalue()
+def upload_to_mongodb(
+    name_pdf: str,
+    n_page: int,
+    brut: str,
+    clean: str,
+    comment: str
+):
     client = MongoClient('mongodb://localhost:27017/')
     collection = client.RagVignerons.page_pdf
     document = {
         "date": datetime.datetime.now(tz=datetime.timezone.utc),
-        'pdf_image': img_data,
+        'name_pdf': name_pdf,
+        'page_number': n_page,
         'text_brut': brut,
         'text_clean': clean,
         'comment': comment
@@ -48,11 +52,14 @@ def upload_to_mongodb(img, brut, clean, comment):
 
 
 def show_pdf(pdf_file: st.file_uploader):
-    pdf_show = fitz.open(stream=pdf_file.read(), filetype="pdf")
-    pdf_reader = PyPDF2.PdfReader(pdf_file)
+    doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
+    pdf_reader = PyPDF2.PdfReader(pdf_file, True)
+
     nbr_pages = len(pdf_reader.pages)
     page_num = st.selectbox("Sélectionner une page", range(1, nbr_pages+1))
+
     pdf_page = pdf_reader.pages[page_num-1]
+    img = img_from_page(doc, page_num)
 
     docs, overview, pdf = st.columns([4, 4, 2])
 
@@ -72,11 +79,15 @@ def show_pdf(pdf_file: st.file_uploader):
 
     # column 3
     pdf.markdown("##### Aperçu du pdf : ")
-    img = img_from_page(pdf_show, page_num)
     pdf.image(img)
     comment = pdf.text_input("Commentaires:")
     if pdf.button('Upload  clean_text'):
-        upload_to_mongodb(img, pdf_page.extract_text(), text, comment)
+        upload_to_mongodb(
+            pdf_file.name,
+            page_num,
+            pdf_page.extract_text(),
+            text, comment
+            )
         st.toast('Pdf upload !')
 
 
