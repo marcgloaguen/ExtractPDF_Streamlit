@@ -1,6 +1,5 @@
 import streamlit as st
 from PIL import Image
-import PyPDF2
 import fitz
 from pymongo import MongoClient
 import datetime
@@ -14,12 +13,38 @@ def main():
         menu_items=None
         )
     st.title("PDF Extract")
-    pdf_file = st.file_uploader("Instruct", type=["pdf"])
+    extract, pdf = st.columns([4, 3])
+    pdf_file = extract.file_uploader("Instruct", type=["pdf"])
     if pdf_file is not None:
-        show_pdf(pdf_file)
+        pdf_reader(pdf_file, extract, pdf)
     with open("instruction.md", "r", encoding="utf-8") as file:
         markdown_content = file.read()
     st.markdown(markdown_content)
+
+
+def pdf_reader(pdf_file: st.file_uploader, col1, col2):
+    doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
+
+    page_num = col1.selectbox("Sélectionner une page", range(1, len(doc)+1))
+
+    pdf_page = doc[page_num-1]
+    img = img_from_page(doc, page_num)
+    txt = pdf_page.get_text()
+
+    col1.markdown('##### Text to clean : ')
+    col1.text_area(
+        label="Text to clean",
+        value=txt,
+        height=535,
+        label_visibility='collapsed'
+        )
+    col2.markdown("##### Aperçu du pdf : ")
+    with col2.container(height=800):
+        st.image(img, use_column_width=True)
+
+    if st.button('Upload  clean_text'):
+        # upload_to_mongodb(pdf_file.name, page_num)
+        st.toast('Pdf upload !')
 
 
 def img_from_page(doc, n_page: int) -> Image:
@@ -48,46 +73,6 @@ def upload_to_mongodb(
     }
     collection.insert_one(document)
     client.close()
-
-
-def show_pdf(pdf_file: st.file_uploader):
-    doc = fitz.open(stream=pdf_file.read(), filetype="pdf")
-    pdf_reader = PyPDF2.PdfReader(pdf_file, True)
-
-    nbr_pages = len(pdf_reader.pages)
-    page_num = st.selectbox("Sélectionner une page", range(1, nbr_pages+1))
-
-    pdf_page = pdf_reader.pages[page_num-1]
-    img = img_from_page(doc, page_num)
-
-    docs, overview, pdf = st.columns([4, 4, 2])
-
-    # column 1
-    docs.markdown('##### Text to clean : ')
-    text = docs.text_area(
-        label="Text to clean",
-        value=pdf_page.extract_text(),
-        height=600,
-        label_visibility='collapsed'
-        )
-
-    # column 2
-    overview.markdown('##### Aperçu : ')
-    with overview.container(height=600):
-        st.markdown(text)
-
-    # column 3
-    pdf.markdown("##### Aperçu du pdf : ")
-    pdf.image(img)
-    comment = pdf.text_input("Commentaires:")
-    if pdf.button('Upload  clean_text'):
-        upload_to_mongodb(
-            pdf_file.name,
-            page_num,
-            pdf_page.extract_text(),
-            text, comment
-            )
-        st.toast('Pdf upload !')
 
 
 if __name__ == "__main__":
