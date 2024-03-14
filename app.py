@@ -4,8 +4,6 @@ import fitz
 from pymongo import MongoClient
 import datetime
 
-# stable version
-
 def main():
     st.set_page_config(
         page_title="PDF Extract",
