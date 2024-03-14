@@ -22,7 +22,7 @@ def main():
     st.markdown(markdown_content)
 
 
-def img_from_page(doc, n_page: int) -> Image:
+def img_from_page(doc: fitz.Document, n_page: int) -> Image:
     page = doc.load_page(n_page-1)
     pix = page.get_pixmap()
     image = Image.frombytes("RGB", [pix.width,  pix.height], pix.samples)
