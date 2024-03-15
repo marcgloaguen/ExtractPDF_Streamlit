@@ -13,7 +13,7 @@ def main():
         layout="wide",
         menu_items=None
         )
-    st.title("PDF Extract")
+    st.title("PDF Extract to mongoDB")
     pdf_file = st.file_uploader("Instruct", type=["pdf"])
     if pdf_file is not None:
         show_pdf(pdf_file)
